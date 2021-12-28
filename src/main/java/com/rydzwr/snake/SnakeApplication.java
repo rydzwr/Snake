@@ -9,7 +9,6 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
@@ -20,15 +19,15 @@ import javafx.util.Duration;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SnakeApplication extends Application
 {
-    private static final int width = 800;
-    private static final int height = width;
-    private static final int rows = 20;
-    private static final int columns = rows;
-    private static final int squareSize = width / rows;
-    private static final String foodPath = "D:\\Programs\\Projects\\Snake\\src\\food\\dot.png";
+    private static double width = 1200;
+    private static double height = 1000;
+    private static final double rows = (width / 20);
+    private static final double columns = rows;
+    private static final double squareSize = width / rows;
     private static final int right = 0;
     private static final int left = 1;
     private static final int up = 2;
@@ -37,12 +36,13 @@ public class SnakeApplication extends Application
     private GraphicsContext gc;
     private List<Point> snakeBody = new ArrayList<>();
     private Point snakeHead;
-    private Image foodImage;
     private int foodX;
     private int foodY;
     private boolean gameOver;
     private int currentDirection;
     private int score = 0;
+
+    Random random = new Random();
 
     @Override
     public void start(Stage primaryStage) throws Exception
@@ -95,7 +95,7 @@ public class SnakeApplication extends Application
 
         for (int i = 0; i < 3; i++)
         {
-            snakeBody.add(new Point(5, rows / 2));
+            snakeBody.add(new Point(5, (int) rows / 2));
         }
 
         snakeHead = snakeBody.get(0);
@@ -115,7 +115,6 @@ public class SnakeApplication extends Application
             gc.fillText("Game Over!", width / 3.5, height / 2);
             return;
         }
-
         drawBackground(gc);
         drawFood(gc);
         drawSnake(gc);
@@ -159,9 +158,9 @@ public class SnakeApplication extends Application
                 }
                 else
                 {
-                    gc.setFill(Color.web("5A5A5A"));
+                    gc.setFill(Color.web("000000"));
                 }
-                gc.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
+                gc.fillRect(i * squareSize, j * squareSize, squareSize - 0.5, squareSize - 0.5);
             }
         }
     }
@@ -182,14 +181,14 @@ public class SnakeApplication extends Application
                 }
             }
 
-            foodImage = new Image(foodPath);
             break;
         }
     }
 
     private void drawFood(GraphicsContext gc)
     {
-        gc.drawImage(foodImage, foodX * squareSize, foodY * squareSize, squareSize, squareSize);
+        gc.setFill(Color.RED);
+        gc.fillRoundRect(foodX * squareSize, foodY * squareSize, squareSize, squareSize, 35, 35);
     }
 
     private void drawSnake(GraphicsContext gc)
