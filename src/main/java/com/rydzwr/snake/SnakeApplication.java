@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -12,13 +13,18 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.awt.*;
+import java.security.Key;
+import java.security.cert.PolicyNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -30,33 +36,37 @@ enum Dir
 
 enum GameMode
 {
-    START, PLAY, GAMEOVER
+    START, PLAY, GAMEOVER, STOP
 }
 
 public class SnakeApplication extends Application
 {
+
+    private Random random = new Random();
+    private GameMode gameMode = GameMode.START;
+    private List<Point> snakeBody = new ArrayList<>();
+    private Dir currentDirection;
     private GraphicsContext gc;
+
     private double screenWidth;
     private double screenHeight;
     private double squareSizePx;
     private double mapOffsetXPx;
     private double mapOffsetYPx;
     private final int mapSize = 100;
-    private GameMode gameMode = GameMode.START;
-
     private final int startLength = 3;
-    private List<Point> snakeBody = new ArrayList<>();
+    private final String startText = "Press SPACE To Start";
+    private final String pressTab = "Press TAB To Pause Game";
+    private final String pressShift = "Press SHIFT To SpeedUp Game";
+
     private Point snakeHead;
     private int foodX;
     private int foodY;
-    private Dir currentDirection;
     private int score = 0;
 
-    private final int normalDuration = 700;
-    private final int fastDuration = 130;
-
-    private Random random = new Random();
     private Timeline timeline = new Timeline();
+    private final int normalDuration = 200;
+    private final int fastDuration = 100;
 
     @Override
     public void start(Stage primaryStage) throws Exception
@@ -108,8 +118,6 @@ public class SnakeApplication extends Application
             }
         });
 
-        initGame();
-
         playAnimation(normalDuration);
     }
 
@@ -129,6 +137,7 @@ public class SnakeApplication extends Application
 
     private void resetGame()
     {
+        score = 0;
         currentDirection = Dir.RIGHT;
 
         snakeBody = new ArrayList<>();
@@ -194,6 +203,22 @@ public class SnakeApplication extends Application
             }
             if (code == KeyCode.SHIFT)
                 playAnimation(fastDuration);
+            if (gameMode == GameMode.PLAY)
+            {
+                if (code == KeyCode.TAB)
+                {
+                    gameMode = GameMode.STOP;
+                    timeline.stop();
+                }
+            }
+            if (gameMode == GameMode.STOP)
+            {
+                if (code == KeyCode.TAB)
+                {
+                    gameMode = GameMode.PLAY;
+                    timeline.play();
+                }
+            }
         }
     }
 
@@ -271,8 +296,8 @@ public class SnakeApplication extends Application
     private void drawStartText()
     {
         gc.setFill(Color.WHITE);
-        gc.setFont(new Font("Digital-7", 70));
-        gc.fillText("Press SPACE To Start", screenWidth / 4.5, screenHeight / 2);
+        gc.setFont(new Font("Digital-7", 50));
+        gc.fillText(startText, squareSizePx + mapOffsetXPx * 2, screenHeight / 2);
     }
 
     private void drawBackground()
