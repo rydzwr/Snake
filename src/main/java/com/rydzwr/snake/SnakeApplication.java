@@ -4,9 +4,11 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -53,6 +55,7 @@ public class SnakeApplication extends Application
     private double squareSizePx;
     private double mapOffsetXPx;
     private double mapOffsetYPx;
+    private final double mapMargin = 20;
     private final int mapSize = 100;
     private final int startLength = 3;
     private final String startText = "Press SPACE To Start";
@@ -75,17 +78,21 @@ public class SnakeApplication extends Application
         primaryStage.setFullScreen(true);
 
         Screen screen = Screen.getPrimary();
-        Rectangle2D bounds = screen.getVisualBounds();
+        Rectangle2D bounds = screen.getBounds();
 
         primaryStage.setX(bounds.getMinX());
         primaryStage.setY(bounds.getMinY());
         primaryStage.setWidth(bounds.getWidth());
         primaryStage.setHeight(bounds.getHeight());
 
+        ChangeListener<Number> stageSizeListener = (observable, oldValue, newValue) -> WindowResized(primaryStage);
+        primaryStage.widthProperty().addListener(stageSizeListener);
+        primaryStage.heightProperty().addListener(stageSizeListener);
+
         screenWidth = bounds.getWidth();
         screenHeight = bounds.getHeight();
 
-        squareSizePx = Math.min(screenWidth, screenHeight) / (double) mapSize;
+        squareSizePx = (Math.min(screenWidth, screenHeight) - 2 * mapMargin) / (double) mapSize;
 
         mapOffsetXPx = screenWidth / 2 - (mapSize * squareSizePx) / 2;
         mapOffsetYPx = screenHeight / 2 - (mapSize * squareSizePx) / 2;
@@ -119,6 +126,22 @@ public class SnakeApplication extends Application
         });
 
         playAnimation(normalDuration);
+    }
+
+    private void WindowResized(Stage stage)
+    {
+        screenWidth = stage.getWidth();
+        screenHeight = stage.getHeight();
+
+        squareSizePx = (Math.min(screenWidth, screenHeight) - 2 * mapMargin) / (double) mapSize;
+
+        mapOffsetXPx = screenWidth / 2 - (mapSize * squareSizePx) / 2;
+        mapOffsetYPx = screenHeight / 2 - (mapSize * squareSizePx) / 2;
+
+        draw();
+
+        if (gameMode == GameMode.STOP)
+            drawGamePaused();
     }
 
     private void playAnimation(int speed)
@@ -157,8 +180,13 @@ public class SnakeApplication extends Application
         {
             if (code == KeyCode.SHIFT)
                 playAnimation(normalDuration);
+            if (code == KeyCode.SPACE)
+            {
+                gameMode = GameMode.STOP;
+                drawGamePaused();
+                timeline.stop();
+            }
         }
-
         else if (gameMode == GameMode.START)
         {
             if (code == KeyCode.SPACE || code == KeyCode.ENTER)
@@ -167,11 +195,18 @@ public class SnakeApplication extends Application
                 gameMode = GameMode.PLAY;
             }
         }
-
         else if (gameMode == GameMode.GAMEOVER)
         {
             if (code == KeyCode.SPACE || code == KeyCode.ENTER)
                 gameMode = GameMode.START;
+        }
+        else if (gameMode == GameMode.STOP)
+        {
+            if (code == KeyCode.SPACE)
+            {
+                gameMode = GameMode.PLAY;
+                timeline.play();
+            }
         }
     }
 
@@ -203,22 +238,6 @@ public class SnakeApplication extends Application
             }
             if (code == KeyCode.SHIFT)
                 playAnimation(fastDuration);
-            if (gameMode == GameMode.PLAY)
-            {
-                if (code == KeyCode.TAB)
-                {
-                    gameMode = GameMode.STOP;
-                    timeline.stop();
-                }
-            }
-            if (gameMode == GameMode.STOP)
-            {
-                if (code == KeyCode.TAB)
-                {
-                    gameMode = GameMode.PLAY;
-                    timeline.play();
-                }
-            }
         }
     }
 
@@ -236,7 +255,7 @@ public class SnakeApplication extends Application
             drawStartText();
         else if (gameMode == GameMode.GAMEOVER)
             drawGameOver();
-        else if (gameMode == GameMode.PLAY)
+        else if ((gameMode == GameMode.PLAY) || (gameMode == GameMode.STOP))
         {
             drawFood();
             drawSnake();
@@ -297,7 +316,9 @@ public class SnakeApplication extends Application
     {
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("Digital-7", 50));
-        gc.fillText(startText, squareSizePx + mapOffsetXPx * 2, screenHeight / 2);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(startText, screenWidth / 2, screenHeight / 2);
     }
 
     private void drawBackground()
@@ -306,7 +327,7 @@ public class SnakeApplication extends Application
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, screenWidth, screenHeight);
         gc.setStroke(Color.GRAY);
-        gc.setLineWidth(10);
+        gc.setLineWidth(1);
         gc.strokeRect(mapOffsetXPx, mapOffsetYPx, mapSize * squareSizePx, mapSize * squareSizePx);
     }
 
@@ -329,14 +350,30 @@ public class SnakeApplication extends Application
     {
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("Digital-7", 35));
-        gc.fillText("Score: " + score, 10, 35);
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Score: " + score, screenWidth * 0.01, screenHeight * 0.01);
+        gc.setFont(new Font("Digital-7", 20));
+        gc.fillText(pressShift, screenWidth * 0.01, screenHeight * 0.01 + 70);
+        gc.fillText("Press SPACE to pause", screenWidth * 0.01, screenHeight * 0.01 + 100);
     }
 
     private void drawGameOver()
     {
         gc.setFill(Color.RED);
         gc.setFont(new Font("Digital-7", 70));
-        gc.fillText("Game Over!", screenWidth / 4.5, screenHeight / 2);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Game Over!", screenWidth / 2, screenHeight / 2);
+    }
+
+    private void drawGamePaused()
+    {
+        gc.setFill(Color.RED);
+        gc.setFont(new Font("Digital-7", 70));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(pressTab, screenWidth / 2, screenHeight / 2);
     }
 
     public void checkGameOver()
