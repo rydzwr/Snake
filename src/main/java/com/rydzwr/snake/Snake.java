@@ -15,7 +15,6 @@ public class Snake extends GameObject
     private Point snakeHead;
     private final int startLength = 3;
     private Dir currentDirection;
-
     private Board board;
 
     @Override
@@ -71,7 +70,6 @@ public class Snake extends GameObject
     public void update()
     {
         moveSnake();
-        checkGameOver();
         eatFood();
     }
 
@@ -91,22 +89,23 @@ public class Snake extends GameObject
                     snakeBody.get(i).getY() * squareSizePx + mapOffsetYPx, squareSizePx, squareSizePx, 20, 20);
     }
 
-    private void checkGameOver()
+    public boolean checkGameOver()
     {
         int mapSize = board.getMapSize();
 
         if (snakeHead.x < 0 || snakeHead.y < 0 || snakeHead.x >= mapSize || snakeHead.y >= mapSize)
-            GameModeManager.getInstance().setCurrentGameMode("GameOver");
+            return true;
 
         // Check If Eating Itself
         for (int i = 1; i < snakeBody.size(); i++)
         {
             if (snakeHead.x == snakeBody.get(i).getX() && snakeHead.getY() == snakeBody.get(i).getY())
             {
-                GameModeManager.getInstance().setCurrentGameMode("GameOver");
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
     private void eatFood()

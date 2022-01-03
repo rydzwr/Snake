@@ -17,12 +17,20 @@ import java.util.TimerTask;
 
 public class SnakeApplication extends Application
 {
+    private static SnakeApplication instance;
+
     private Timer updateTimer = new Timer();
     private Timer drawTimer = new Timer();
+
+    private long FPS = 60;
+    private long UpdateIntervalMS = 200;
+    private boolean isPaused = false;
 
     @Override
     public void start(Stage primaryStage) throws Exception
     {
+        instance = this;
+
         ScreenManager screenManager = ScreenManager.getInstance();
         GameModeManager gmManager = GameModeManager.getInstance();
 
@@ -65,26 +73,57 @@ public class SnakeApplication extends Application
             }
         });
 
-        TimerTask updateTask = new TimerTask()
+        initGame();
+
+        updateTimer.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                update();
+            }
+        }, 0, UpdateIntervalMS);
+
+        drawTimer.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                draw();
+            }
+        }, 0, 1000 / FPS);
+    }
+
+    @Override
+    public void stop()
+    {
+        updateTimer.cancel();
+        drawTimer.cancel();
+    }
+
+    public boolean getGamePaused()
+    {
+        return isPaused;
+    }
+
+    public void setGamePaused(boolean value)
+    {
+        isPaused = value;
+    }
+
+    public void changeUpdateInterval(long intervalMS)
+    {
+        updateTimer.cancel();
+        updateTimer.purge();
+
+        updateTimer = new Timer();
+        updateTimer.schedule(new TimerTask()
         {
             public void run()
             {
                 update();
             }
-        };
-
-        TimerTask drawTask = new TimerTask()
-        {
-            public void run()
-            {
-                draw();
-            }
-        };
-
-        initGame();
-
-        updateTimer.schedule(updateTask, 0, 200);
-        drawTimer.schedule(drawTask, 0, 1000 / 60);
+        }, 0, intervalMS);
     }
 
     private void initGame()
@@ -104,13 +143,17 @@ public class SnakeApplication extends Application
 
     private void update()
     {
-        GameModeManager.getInstance().update();
         GameObject.collectGarbage();
         GameObject.registerNewObjects();
+
+        if (!isPaused)
+            GameModeManager.getInstance().update();
     }
 
-    public static void main(String[] args)
+    public static SnakeApplication getInstance()
     {
-        launch(args);
+        return instance;
     }
+
+    public static void main(String[] args) { launch(args); }
 }

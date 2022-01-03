@@ -55,6 +55,7 @@ public final class GameModeManager
             throw new IllegalArgumentException("GM creation failed!");
 
         currentGameMode = newMode;
+        SnakeApplication.getInstance().setGamePaused(false);
         currentGameMode.init();
     }
 
