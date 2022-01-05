@@ -74,7 +74,7 @@ public class PlayGameMode extends GameMode
             firstUpdate = false;
         }
 
-        if (player.checkGameOver())
+        if (player.isDead())
         {
             SnakeApplication.getInstance().setGamePaused(true);
             gameOver = true;

@@ -34,7 +34,7 @@ public class SnakeApplication extends Application
         ScreenManager screenManager = ScreenManager.getInstance();
         GameModeManager gmManager = GameModeManager.getInstance();
 
-        screenManager.createScreen(primaryStage);
+        screenManager.createScreen(primaryStage, false);
         Scene scene = primaryStage.getScene();
 
         scene.setOnKeyPressed(new EventHandler<KeyEvent>()
@@ -143,9 +143,7 @@ public class SnakeApplication extends Application
 
     private void update()
     {
-        GameObject.collectGarbage();
-        GameObject.registerNewObjects();
-
+        GameModeManager.getInstance().processGameObjects();
         if (!isPaused)
             GameModeManager.getInstance().update();
     }

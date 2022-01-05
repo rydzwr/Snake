@@ -95,6 +95,15 @@ public final class GameModeManager
             currentGameMode.onMouseDown(event);
     }
 
+    public void processGameObjects()
+    {
+        if (currentGameMode != null)
+        {
+            currentGameMode.collectGarbage();
+            currentGameMode.registerNewObjects();
+        }
+    }
+
     public static GameModeManager getInstance()
     {
         if (instance == null)

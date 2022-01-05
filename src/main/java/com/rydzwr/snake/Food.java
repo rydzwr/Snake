@@ -3,10 +3,11 @@ package com.rydzwr.snake;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Random;
 import javafx.scene.paint.Color;
 
-public class Food extends GameObject
+public class Food extends GameObject implements IBoardObject
 {
     private Point position;
     private Board board;
@@ -17,9 +18,22 @@ public class Food extends GameObject
     }
 
     @Override
-    public void init()
+    public ArrayList<Point> getOccupiedCords()
     {
-        Snake snake = (Snake) GameObject.find("Snake");
+        ArrayList<Point> cords = new ArrayList<Point>();
+        cords.add(position);
+        return cords;
+    }
+
+    @Override
+    public String getTag()
+    {
+        return super.getTag();
+    }
+
+    @Override
+    public void postInit()
+    {
         board = (Board) GameObject.find("Board");
         Random random = new Random();
 
@@ -33,29 +47,23 @@ public class Food extends GameObject
             foodX = random.nextInt(mapSize);
             foodY = random.nextInt(mapSize);
 
-            if (snake.positionInsideSnake(new Point(foodX, foodY)))
+            if (board.checkSquareOccupied(new Point(foodX, foodY)) != null)
                 validPosition = false;
 
         } while (!validPosition);
 
         position = new Point(foodX, foodY);
-    }
-
-    @Override
-    public void update()
-    {
-
+        super.setTag("Food");
+        board.registerBoardObject(getUniqueId(), this);
     }
 
     @Override
     public void draw(GraphicsContext gc)
     {
+        Point screenCoords = board.getScreenCoords(position);
         double squareSizePx = board.getSquareSizePx();
-        double mapOffsetXPx = board.getMapOffsetX();
-        double mapOffsetYPx = board.getMapOffsetY();
 
         gc.setFill(Color.RED);
-        gc.fillRoundRect(position.getX() * squareSizePx + mapOffsetXPx,
-                position.getY() * squareSizePx + mapOffsetYPx, squareSizePx, squareSizePx, 35, 35);
+        gc.fillRoundRect(screenCoords.getX(), screenCoords.getY(), squareSizePx, squareSizePx, 35, 35);
     }
 }

@@ -3,18 +3,24 @@ package com.rydzwr.snake;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.ToIntBiFunction;
 
 public abstract class GameMode
 {
     private HashMap<String, GameObject> gameObjects;
+    private HashMap<String, GameObject> newObjects;
+    private ArrayList<String> garbage;
 
     public GameMode()
     {
         this.gameObjects = new HashMap<String, GameObject>();
+        this.newObjects = new HashMap<>();
+        this.garbage = new ArrayList<>();
     }
 
     public void init()
@@ -59,18 +65,38 @@ public abstract class GameMode
             o.onMouseDown(event);
     }
 
-    public void addGameObject(String tag, GameObject object)
+    public void addGameObject(String uniqueId, GameObject object)
     {
-        gameObjects.put(tag, object);
+        newObjects.put(uniqueId, object);
     }
 
-    public void removeGameObject(String tag)
+    public void removeGameObject(String uniqueId)
     {
-        gameObjects.remove(tag);
+        garbage.add(uniqueId);
     }
 
-    public GameObject findGameObject(String tag)
+    public GameObject findGameObject(String uniqueId)
     {
-        return gameObjects.get(tag);
+        return gameObjects.get(uniqueId);
+    }
+
+    public void collectGarbage()
+    {
+        for (String uniqueId : garbage)
+            gameObjects.remove(uniqueId);
+
+        garbage.clear();
+    }
+
+    public void registerNewObjects()
+    {
+        for (Map.Entry<String, GameObject> entry : newObjects.entrySet()) {
+            gameObjects.put(entry.getKey(), entry.getValue());
+        }
+
+        for (GameObject newObject: newObjects.values())
+            newObject.postInit();
+
+        newObjects.clear();
     }
 }

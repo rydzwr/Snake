@@ -9,28 +9,47 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 
-public class Snake extends GameObject
+public class Snake extends GameObject implements IBoardObject
 {
+    private final int startLength = 3;
+    
     private ArrayList<Point> snakeBody;
     private Point snakeHead;
-    private final int startLength = 3;
     private Dir currentDirection;
     private Board board;
 
     @Override
+    public String getTag()
+    {
+        return super.getTag();
+    }
+
+    @Override
+    public ArrayList<Point> getOccupiedCords()
+    {
+        return new ArrayList<Point>(snakeBody.subList(1, snakeBody.size() -1));
+    }
+
+    @Override
     public void init()
     {
-        board = (Board) GameObject.find("Board");
-
-        int mapSize = ((Board)GameObject.find("Board")).getMapSize();
-
         currentDirection = Dir.RIGHT;
         snakeBody = new ArrayList<>();
+    }
+
+    @Override
+    public void postInit()
+    {
+        board = (Board)GameObject.find("Board");
+        int mapSize = board.getMapSize();
 
         for (int i = 0; i < startLength; i++)
             snakeBody.add(new Point(mapSize / 2, mapSize / 2));
 
         snakeHead = snakeBody.get(0);
+
+        this.setTag("Snake");
+        board.registerBoardObject(this.getUniqueId(), this);
     }
 
     @Override
@@ -61,12 +80,6 @@ public class Snake extends GameObject
     }
 
     @Override
-    public void onKeyUp(KeyEvent event)
-    {
-
-    }
-
-    @Override
     public void update()
     {
         moveSnake();
@@ -77,45 +90,29 @@ public class Snake extends GameObject
     public void draw(GraphicsContext gc)
     {
         double squareSizePx = board.getSquareSizePx();
-        double mapOffsetXPx = board.getMapOffsetX();
-        double mapOffsetYPx = board.getMapOffsetY();
+        Point screenCoords = board.getScreenCoords(snakeHead);
 
         gc.setFill(Color.web("09B730"));
-        gc.fillRoundRect(snakeHead.getX() * squareSizePx + mapOffsetXPx,
-                snakeHead.getY() * squareSizePx + mapOffsetYPx, squareSizePx, squareSizePx, 35, 35);
+        gc.fillRoundRect(screenCoords.getX(), screenCoords.getY(), squareSizePx, squareSizePx, 35, 35);
 
-        for (int i = 1; i < snakeBody.size(); i++)
-            gc.fillRoundRect(snakeBody.get(i).getX() * squareSizePx + mapOffsetXPx,
-                    snakeBody.get(i).getY() * squareSizePx + mapOffsetYPx, squareSizePx, squareSizePx, 20, 20);
-    }
-
-    public boolean checkGameOver()
-    {
-        int mapSize = board.getMapSize();
-
-        if (snakeHead.x < 0 || snakeHead.y < 0 || snakeHead.x >= mapSize || snakeHead.y >= mapSize)
-            return true;
-
-        // Check If Eating Itself
         for (int i = 1; i < snakeBody.size(); i++)
         {
-            if (snakeHead.x == snakeBody.get(i).getX() && snakeHead.getY() == snakeBody.get(i).getY())
-            {
-                return true;
-            }
+            screenCoords = board.getScreenCoords(snakeBody.get(i));
+            gc.fillRoundRect(screenCoords.getX(), screenCoords.getY(), squareSizePx, squareSizePx, 20, 20);
         }
+    }
 
-        return false;
+    public boolean isDead()
+    {
+        String tag = board.checkSquareOccupied(snakeHead);
+        return (tag == "Snake" || tag == "out");
     }
 
     private void eatFood()
     {
-        Food food = (Food)GameObject.find("Food" + board.getScore());
+        String tag = board.checkSquareOccupied(snakeHead);
 
-        if (food == null)
-            return;
-
-        if (snakeHead.getX() == food.getPosition().getX() && snakeHead.getY() == food.getPosition().getY())
+        if (tag == "Food")
         {
             snakeBody.add(new Point(-1, -1));
             GameObject.destroy("Food" + board.getScore());

@@ -11,14 +11,41 @@ import java.util.Map;
 
 public abstract class GameObject
 {
-    private static ArrayList<Pair<String, GameObject>> newObjects = new ArrayList<>();
-    private static ArrayList<String> garbage = new ArrayList<String>();
+    private String uniqueId;
+    private String tag;
+    private boolean idSet = false;
 
-    public abstract void init();
+    public String getUniqueId()
+    {
+        return uniqueId;
+    }
 
-    public abstract void update();
+    public void setUniqueId(String uniqueId)
+    {
+        if (!idSet)
+        {
+            this.uniqueId = uniqueId;
+            idSet = true;
+        }
+    }
 
-    public abstract void draw(GraphicsContext gc);
+    public String getTag()
+    {
+        return tag;
+    }
+
+    public void setTag(String tag)
+    {
+        this.tag = tag;
+    }
+
+    public void init() { };
+
+    public void postInit() { };
+
+    public void update() { };
+
+    public void draw(GraphicsContext gc) { };
 
     public void onKeyDown(KeyEvent event) {}
 
@@ -28,9 +55,9 @@ public abstract class GameObject
 
     public void onMouseDown(MouseEvent event) {}
 
-    public static GameObject create(String tag, Class objClass)
+    public static GameObject create(String uniqueId, Class objClass)
     {
-        if (tag.isBlank() || objClass == null || !GameObject.class.isAssignableFrom(objClass))
+        if (uniqueId.isBlank() || objClass == null || !GameObject.class.isAssignableFrom(objClass))
             throw new IllegalArgumentException("New GO tag or class empty or invalid.");
 
         GameObject newObject = null;
@@ -47,37 +74,20 @@ public abstract class GameObject
         if (newObject == null)
             throw new IllegalArgumentException("GO creation failed!");
 
-        newObjects.add(new Pair<>(tag, newObject));
+        newObject.setUniqueId(uniqueId);
+        newObject.init();
+        GameModeManager.getInstance().getCurrentGameMode().addGameObject(uniqueId, newObject);
 
         return newObject;
     }
 
-    public static void destroy(String tag)
+    public static void destroy(String uniqueId)
     {
-        garbage.add(tag);
+        GameModeManager.getInstance().getCurrentGameMode().removeGameObject(uniqueId);
     }
 
-    public static GameObject find(String tag)
+    public static GameObject find(String uniqueId)
     {
-        return GameModeManager.getInstance().getCurrentGameMode().findGameObject(tag);
-    }
-
-    public static void collectGarbage()
-    {
-        for (String tag : garbage)
-            GameModeManager.getInstance().getCurrentGameMode().removeGameObject(tag);
-
-        garbage.clear();
-    }
-
-    public static void registerNewObjects()
-    {
-        for (Pair<String, GameObject> pair : newObjects)
-            GameModeManager.getInstance().getCurrentGameMode().addGameObject(pair.getKey(), pair.getValue());
-
-        for (Pair<String, GameObject> pair : newObjects)
-            pair.getValue().init();
-
-        newObjects.clear();
+        return GameModeManager.getInstance().getCurrentGameMode().findGameObject(uniqueId);
     }
 }
