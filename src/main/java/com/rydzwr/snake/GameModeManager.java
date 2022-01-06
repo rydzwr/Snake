@@ -101,6 +101,7 @@ public final class GameModeManager
         {
             currentGameMode.collectGarbage();
             currentGameMode.registerNewObjects();
+            currentGameMode.sortByDepth();
         }
     }
 

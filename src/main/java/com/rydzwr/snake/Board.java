@@ -56,6 +56,7 @@ public class Board extends GameObject
     public void init()
     {
         objects = new HashMap<String  ,IBoardObject>();
+        this.setzIndex(-1);
     }
 
     public void registerBoardObject(String name ,IBoardObject object)

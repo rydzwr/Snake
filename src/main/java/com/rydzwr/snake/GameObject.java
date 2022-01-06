@@ -14,6 +14,18 @@ public abstract class GameObject
     private String uniqueId;
     private String tag;
     private boolean idSet = false;
+    private int zIndex = 0;
+
+    public int getzIndex()
+    {
+        return zIndex;
+    }
+
+    public void setzIndex(int zIndex)
+    {
+        this.zIndex = zIndex;
+        GameModeManager.getInstance().getCurrentGameMode().setDepthDirty();
+    }
 
     public String getUniqueId()
     {
@@ -76,7 +88,7 @@ public abstract class GameObject
 
         newObject.setUniqueId(uniqueId);
         newObject.init();
-        GameModeManager.getInstance().getCurrentGameMode().addGameObject(uniqueId, newObject);
+        GameModeManager.getInstance().getCurrentGameMode().addGameObject(newObject);
 
         return newObject;
     }

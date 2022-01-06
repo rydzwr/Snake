@@ -26,6 +26,7 @@ public class PlayGameMode extends GameMode
         GameObject.create("Board", Board.class);
         player = (Snake)GameObject.create("Snake", Snake.class);
         GameObject.create("Food0", Food.class);
+        GameObject.create("Obstacle", Obstacle.class);
 
         super.init();
     }

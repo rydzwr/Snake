@@ -12,7 +12,7 @@ import javafx.scene.paint.Color;
 public class Snake extends GameObject implements IBoardObject
 {
     private final int startLength = 3;
-    
+
     private ArrayList<Point> snakeBody;
     private Point snakeHead;
     private Dir currentDirection;
@@ -49,6 +49,7 @@ public class Snake extends GameObject implements IBoardObject
         snakeHead = snakeBody.get(0);
 
         this.setTag("Snake");
+        this.setzIndex(1);
         board.registerBoardObject(this.getUniqueId(), this);
     }
 
@@ -105,7 +106,7 @@ public class Snake extends GameObject implements IBoardObject
     public boolean isDead()
     {
         String tag = board.checkSquareOccupied(snakeHead);
-        return (tag == "Snake" || tag == "out");
+        return (tag == "Snake" || tag == "out" || tag == "Obstacle");
     }
 
     private void eatFood()
