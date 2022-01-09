@@ -14,7 +14,18 @@ public abstract class GameObject
     private String uniqueId;
     private String tag;
     private boolean idSet = false;
+    private boolean isGarbage = false;
     private int zIndex = 0;
+
+    public boolean isGarbage()
+    {
+        return isGarbage;
+    }
+
+    public void setGarbage(boolean garbage)
+    {
+        isGarbage = garbage;
+    }
 
     public int getzIndex()
     {
@@ -55,7 +66,7 @@ public abstract class GameObject
 
     public void postInit() { };
 
-    public void update() { };
+    public void update(long deltaTime) { };
 
     public void draw(GraphicsContext gc) { };
 
@@ -67,9 +78,9 @@ public abstract class GameObject
 
     public void onMouseDown(MouseEvent event) {}
 
-    public static GameObject create(String uniqueId, Class objClass)
+    public static GameObject create(Class objClass)
     {
-        if (uniqueId.isBlank() || objClass == null || !GameObject.class.isAssignableFrom(objClass))
+        if (objClass == null || !GameObject.class.isAssignableFrom(objClass))
             throw new IllegalArgumentException("New GO tag or class empty or invalid.");
 
         GameObject newObject = null;
@@ -86,20 +97,23 @@ public abstract class GameObject
         if (newObject == null)
             throw new IllegalArgumentException("GO creation failed!");
 
-        newObject.setUniqueId(uniqueId);
-        newObject.init();
         GameModeManager.getInstance().getCurrentGameMode().addGameObject(newObject);
 
         return newObject;
     }
 
-    public static void destroy(String uniqueId)
+    public static void destroy(GameObject obj)
     {
-        GameModeManager.getInstance().getCurrentGameMode().removeGameObject(uniqueId);
+        GameModeManager.getInstance().getCurrentGameMode().removeGameObject(obj);
     }
 
-    public static GameObject find(String uniqueId)
+    public static ArrayList<GameObject> findAll(String tag)
     {
-        return GameModeManager.getInstance().getCurrentGameMode().findGameObject(uniqueId);
+        return GameModeManager.getInstance().getCurrentGameMode().findGameObjects(tag);
+    }
+
+    public static GameObject findUnique(String tag)
+    {
+        return GameModeManager.getInstance().getCurrentGameMode().findUniqueObject(tag);
     }
 }

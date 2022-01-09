@@ -9,14 +9,19 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 
-public class Snake extends GameObject implements IBoardObject
+public class Snake extends BoardObject
 {
     private final int startLength = 3;
+    private final long normalInterval = 200;
+    private final long fastInterval = 100;
 
     private ArrayList<Point> snakeBody;
     private Point snakeHead;
     private Dir currentDirection;
     private Board board;
+
+    private long timeSinceMovement = 0;
+    private long movementInterval;
 
     @Override
     public String getTag()
@@ -35,16 +40,17 @@ public class Snake extends GameObject implements IBoardObject
     {
         currentDirection = Dir.RIGHT;
         snakeBody = new ArrayList<>();
+        movementInterval = normalInterval;
     }
 
     @Override
     public void postInit()
     {
-        board = (Board)GameObject.find("Board");
+        board = (Board)GameObject.findUnique("Board");
         int mapSize = board.getMapSize();
 
         for (int i = 0; i < startLength; i++)
-            snakeBody.add(new Point(mapSize / 2, mapSize / 2));
+            snakeBody.add(new Point(mapSize / 2 - i, mapSize / 2));
 
         snakeHead = snakeBody.get(0);
 
@@ -57,6 +63,9 @@ public class Snake extends GameObject implements IBoardObject
     public void onKeyDown(KeyEvent event)
     {
         KeyCode code = event.getCode();
+
+        if (code == KeyCode.SHIFT)
+            movementInterval = fastInterval;
 
         if (code == KeyCode.RIGHT || code == KeyCode.D)
         {
@@ -81,10 +90,25 @@ public class Snake extends GameObject implements IBoardObject
     }
 
     @Override
-    public void update()
+    public void onKeyUp(KeyEvent event)
     {
-        moveSnake();
-        eatFood();
+        KeyCode code = event.getCode();
+
+        if (code == KeyCode.SHIFT)
+            movementInterval = normalInterval;
+    }
+
+    @Override
+    public void update(long deltaTime)
+    {
+        if (timeSinceMovement >= movementInterval)
+        {
+            timeSinceMovement = 0;
+            moveSnake();
+            eatFood();
+        }
+
+        timeSinceMovement += deltaTime;
     }
 
     @Override
@@ -105,19 +129,19 @@ public class Snake extends GameObject implements IBoardObject
 
     public boolean isDead()
     {
-        String tag = board.checkSquareOccupied(snakeHead);
+        String tag = board.checkSquareOccupied(snakeHead).getTag();
         return (tag == "Snake" || tag == "out" || tag == "Obstacle");
     }
 
     private void eatFood()
     {
-        String tag = board.checkSquareOccupied(snakeHead);
+        String tag = board.checkSquareOccupied(snakeHead).getTag();
 
         if (tag == "Food")
         {
             snakeBody.add(new Point(-1, -1));
-            GameObject.destroy("Food" + board.getScore());
-            GameObject.create("Food" + (board.getScore() + 1), Food.class);
+           // GameObject.destroy("Food" + board.getScore());
+           // GameObject.create("Food" + (board.getScore() + 1), Food.class);
             board.incrementScore(1);
         }
     }

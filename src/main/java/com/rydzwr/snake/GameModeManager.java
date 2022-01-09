@@ -59,10 +59,10 @@ public final class GameModeManager
         currentGameMode.init();
     }
 
-    public void update()
+    public void update(long deltaTime)
     {
         if (currentGameMode != null)
-            currentGameMode.update();
+            currentGameMode.update(deltaTime);
     }
 
     public void draw(GraphicsContext gc)

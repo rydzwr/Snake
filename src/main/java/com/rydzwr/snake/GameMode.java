@@ -11,14 +11,13 @@ public abstract class GameMode
 {
     private ArrayList<GameObject> gameObjects;
     private ArrayList<GameObject> newObjects;
-    private ArrayList<String> garbage;
     private boolean depthDirty;
+    private int currentGOId = 0;
 
     public GameMode()
     {
         this.gameObjects = new ArrayList<>();
         this.newObjects = new ArrayList<>();
-        this.garbage = new ArrayList<>();
         this.depthDirty = false;
     }
 
@@ -28,10 +27,10 @@ public abstract class GameMode
             o.init();
     }
 
-    public void update()
+    public void update(long deltaTime)
     {
         for (GameObject o : gameObjects)
-            o.update();
+            o.update(deltaTime);
     }
 
     public void draw(GraphicsContext gc)
@@ -80,49 +79,44 @@ public abstract class GameMode
 
     public void addGameObject(GameObject object)
     {
-        if (findGameObject(object.getUniqueId()) != null)
-            throw new IllegalArgumentException("GameObject uniqueId duplicated: " + object.getUniqueId());
-
+        object.setUniqueId(Integer.toString(currentGOId));
+        object.init();
         newObjects.add(object);
         depthDirty = true;
+        currentGOId++;
     }
 
-    public void removeGameObject(String uniqueId)
+    public void removeGameObject(GameObject obj)
     {
-        garbage.add(uniqueId);
+        obj.setGarbage(true);
         depthDirty = true;
     }
 
-    public GameObject findGameObject(String uniqueId)
+    public ArrayList<GameObject> findGameObjects(String tag)
     {
-        GameObject obj = null;
+        ArrayList<GameObject> results = new ArrayList<>();
         for (GameObject gameObject : gameObjects)
         {
-            if (gameObject.getUniqueId() == uniqueId)
-                obj = gameObject;
-        }
-
-        if (obj == null)
-            return null;
-
-        for (String garbageId : garbage)
-        {
-            if (garbageId == obj.getUniqueId())
-                return null;
+            if ((gameObject.getTag() == tag) && (!gameObject.isGarbage()))
+                results.add(gameObject);
         }
         
-        return obj;
+        return results;
+    }
+
+    public GameObject findUniqueObject(String tag)
+    {
+        ArrayList<GameObject> results = this.findGameObjects(tag);
+        return (results.size() == 0) ? null : results.get(0);
     }
 
     public void collectGarbage()
     {
         for (int i = 0; i < gameObjects.size(); i++)
         {
-            if (garbage.contains(gameObjects.get(i).getUniqueId()))
+            if (gameObjects.get(i).isGarbage())
                 gameObjects.remove(i);
         }
-
-        garbage.clear();
     }
 
     public void registerNewObjects()

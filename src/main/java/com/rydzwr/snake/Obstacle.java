@@ -7,27 +7,19 @@ import java.util.ArrayList;
 import java.util.Random;
 import javafx.scene.paint.Color;
 
-public class Obstacle extends GameObject implements IBoardObject
+public class Obstacle extends BoardObject
 {
-    private Random random = new Random();
-
-    private Point position;
-    boolean validPosition = true;
+    private Random random;
+    private ArrayList<Point> positions;
+    boolean validPosition;
     int obstacleX, obstacleY;
-    private Board board = (Board) GameObject.find("Board");
-    int mapSize = board.getMapSize();
-
-    public Point getPosition()
-    {
-        return position;
-    }
+    private Board board;
+    int mapSize;
 
     @Override
     public ArrayList<Point> getOccupiedCords()
     {
-        ArrayList<Point> cords = new ArrayList<Point>();
-        cords.add(position);
-        return cords;
+        return positions;
     }
 
     @Override
@@ -37,48 +29,54 @@ public class Obstacle extends GameObject implements IBoardObject
     }
 
     @Override
+    public void init()
+    {
+        positions = new ArrayList<>();
+        random = new Random();
+        validPosition = true;
+    }
+
+    @Override
     public void postInit()
     {
-        chooseAndGenerateRandomObstacle();
+        board = (Board) GameObject.findUnique("Board");
+        mapSize = board.getMapSize();
+
+        findFirstPoint();
+        generateObstacle();
+
+        super.setTag("Obstacle");
+        board.registerBoardObject(getUniqueId(), this);
     }
 
     @Override
     public void draw(GraphicsContext gc)
     {
-        Point screenCoords = board.getScreenCoords(position);
         double squareSizePx = board.getSquareSizePx();
-
         gc.setFill(Color.GRAY);
-        gc.fillRoundRect(screenCoords.getX(), screenCoords.getY(), squareSizePx, squareSizePx, 35, 35);
+
+        for (Point position : positions)
+        {
+            Point screenCoords = board.getScreenCoords(position);
+            gc.fillRoundRect(screenCoords.getX(), screenCoords.getY(), squareSizePx, squareSizePx, 35, 35);
+        }
     }
 
-    void chooseAndGenerateRandomObstacle()
+    void generateObstacle()
     {
         int randomN = random.nextInt(3);
 
         if (randomN == 0)
             generatePointObstacle();
-        if (randomN == 1)
+        else if (randomN == 1)
             generateLShapedObstacle();
-        if (randomN == 2)
+        else if (randomN == 2)
             generateWallObstacle();
     }
 
     public void generatePointObstacle()
     {
-        do
-        {
-            obstacleX = random.nextInt(mapSize);
-            obstacleY = random.nextInt(mapSize);
-
-            if (board.checkSquareOccupied(new Point(obstacleX, obstacleY)) != null)
-                validPosition = false;
-
-        } while (!validPosition);
-
-        position = new Point(obstacleX, obstacleY);
-        super.setTag("Obstacle");
-        board.registerBoardObject(getUniqueId(), this);
+        positions.add(new Point(obstacleX, obstacleY));
     }
 
     public void generateLShapedObstacle()
@@ -86,24 +84,19 @@ public class Obstacle extends GameObject implements IBoardObject
         int leftArmLength = random.nextInt(5) + 1;
         int rightArmLength = random.nextInt(5) + 1;
 
-        do
-        {
-            obstacleX = random.nextInt(mapSize);
-            obstacleY = random.nextInt(mapSize);
-
-            if (board.checkSquareOccupied(new Point(obstacleX, obstacleY)) != null)
-                validPosition = false;
-
-        } while (!validPosition);
-
         for (int i = 0; i < rightArmLength; i++)
         {
-            position = new Point(obstacleX, obstacleY + i);
-            position = new Point(obstacleX + 1, obstacleY);
+            Point point = new Point(obstacleX, obstacleY + i);
+            if (board.checkSquareOccupied(point) == null)
+                positions.add(point);
         }
 
-        super.setTag("LShapedObstacle");
-        board.registerBoardObject(getUniqueId(), this);
+        for (int i = 0; i < leftArmLength; i++)
+        {
+            Point point = new Point(obstacleX + i, obstacleY);
+            if (board.checkSquareOccupied(point) == null)
+                positions.add(point);
+        }
     }
 
     public void generateWallObstacle()
@@ -111,6 +104,28 @@ public class Obstacle extends GameObject implements IBoardObject
         int randomN = random.nextInt(1);
         int wallLength = random.nextInt(10) + 1;
 
+        if (randomN == 0)
+        {
+            for (int i = 0; i < wallLength; i++)
+            {
+                Point point = new Point(obstacleX, obstacleY + i);
+                if (board.checkSquareOccupied(point) == null)
+                    positions.add(point);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < wallLength; i++)
+            {
+                Point point = new Point(obstacleX + i, obstacleY);
+                if (board.checkSquareOccupied(point) == null)
+                    positions.add(point);
+            }
+        }
+    }
+
+    public void findFirstPoint()
+    {
         do
         {
             obstacleX = random.nextInt(mapSize);
@@ -120,23 +135,5 @@ public class Obstacle extends GameObject implements IBoardObject
                 validPosition = false;
 
         } while (!validPosition);
-
-        if (randomN == 0)
-        {
-            for (int i = 0; i < wallLength; i++)
-            {
-                position = new Point(obstacleX, obstacleY + i);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < wallLength; i++)
-            {
-                position = new Point(obstacleX + i, obstacleY);
-            }
-        }
-
-        super.setTag("WallObstacle");
-        board.registerBoardObject(getUniqueId(), this);
     }
 }

@@ -10,9 +10,6 @@ import javafx.scene.text.TextAlignment;
 
 public class PlayGameMode extends GameMode
 {
-    private final long normalInterval = 200;
-    private final long fastInterval = 100;
-
     private boolean gameStarted = false;
     private boolean gameOver = false;
     private boolean firstUpdate = true;
@@ -23,10 +20,10 @@ public class PlayGameMode extends GameMode
     @Override
     public void init()
     {
-        GameObject.create("Board", Board.class);
-        player = (Snake)GameObject.create("Snake", Snake.class);
-        GameObject.create("Food0", Food.class);
-        GameObject.create("Obstacle", Obstacle.class);
+        GameObject.create(Board.class);
+        player = (Snake)GameObject.create(Snake.class);
+        GameObject.create(Food.class);
+        GameObject.create(Obstacle.class);
 
         super.init();
     }
@@ -36,8 +33,6 @@ public class PlayGameMode extends GameMode
     {
         KeyCode code = event.getCode();
 
-        if (code == KeyCode.SHIFT)
-            SnakeApplication.getInstance().changeUpdateInterval(normalInterval);
         if (code == KeyCode.SPACE)
         {
             if (!gameStarted)
@@ -54,20 +49,9 @@ public class PlayGameMode extends GameMode
     }
 
     @Override
-    public void onKeyDown(KeyEvent event)
+    public void update(long deltaTime)
     {
-        KeyCode code = event.getCode();
-
-        if (code == KeyCode.SHIFT)
-            SnakeApplication.getInstance().changeUpdateInterval(fastInterval);
-
-        super.onKeyDown(event);
-    }
-
-    @Override
-    public void update()
-    {
-        super.update();
+        super.update(deltaTime);
 
         if (firstUpdate)
         {

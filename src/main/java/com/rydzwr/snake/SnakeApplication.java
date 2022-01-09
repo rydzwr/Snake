@@ -1,6 +1,7 @@
 package com.rydzwr.snake;
 
 import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -19,11 +20,8 @@ public class SnakeApplication extends Application
 {
     private static SnakeApplication instance;
 
-    private Timer updateTimer = new Timer();
-    private Timer drawTimer = new Timer();
-
-    private long FPS = 60;
-    private long UpdateIntervalMS = 200;
+    private AnimationTimer timer;
+    private long previousNow = 0;
     private boolean isPaused = false;
 
     @Override
@@ -75,30 +73,25 @@ public class SnakeApplication extends Application
 
         initGame();
 
-        updateTimer.schedule(new TimerTask()
+        timer = new AnimationTimer()
         {
             @Override
-            public void run()
+            public void handle(long now)
             {
-                update();
-            }
-        }, 0, UpdateIntervalMS);
-
-        drawTimer.schedule(new TimerTask()
-        {
-            @Override
-            public void run()
-            {
+                long deltaTime = (previousNow == 0) ? 0 : (now - previousNow) / 1000000;
+                update(deltaTime);
                 draw();
+                previousNow = now;
             }
-        }, 0, 1000 / FPS);
+        };
+
+        timer.start();
     }
 
     @Override
     public void stop()
     {
-        updateTimer.cancel();
-        drawTimer.cancel();
+        timer.stop();
     }
 
     public boolean getGamePaused()
@@ -109,21 +102,6 @@ public class SnakeApplication extends Application
     public void setGamePaused(boolean value)
     {
         isPaused = value;
-    }
-
-    public void changeUpdateInterval(long intervalMS)
-    {
-        updateTimer.cancel();
-        updateTimer.purge();
-
-        updateTimer = new Timer();
-        updateTimer.schedule(new TimerTask()
-        {
-            public void run()
-            {
-                update();
-            }
-        }, 0, intervalMS);
     }
 
     private void initGame()
@@ -141,11 +119,11 @@ public class SnakeApplication extends Application
         GameModeManager.getInstance().draw(gc);
     }
 
-    private void update()
+    private void update(long deltaTime)
     {
         GameModeManager.getInstance().processGameObjects();
         if (!isPaused)
-            GameModeManager.getInstance().update();
+            GameModeManager.getInstance().update(deltaTime);
     }
 
     public static SnakeApplication getInstance()

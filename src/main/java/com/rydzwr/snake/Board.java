@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class Board extends GameObject
 {
-    private HashMap<String ,IBoardObject> objects;
+    private HashMap<String, BoardObject> objects;
 
     private final int mapSize = 100;
     private final double mapMargin = 0.02;
@@ -55,11 +55,11 @@ public class Board extends GameObject
     @Override
     public void init()
     {
-        objects = new HashMap<String  ,IBoardObject>();
+        objects = new HashMap<String , BoardObject>();
         this.setzIndex(-1);
     }
 
-    public void registerBoardObject(String name ,IBoardObject object)
+    public void registerBoardObject(String name, BoardObject object)
     {
         objects.put(name ,object);
     }
@@ -69,19 +69,19 @@ public class Board extends GameObject
         objects.remove(name);
     }
 
-    public String checkSquareOccupied(Point cords)
+    public BoardObject checkSquareOccupied(Point cords)
     {
         if (cords.getY() < 0 || cords.getX() < 0 || cords.getY() > mapSize - 1 || cords.getX() > mapSize - 1)
-            return "out";
+            return new OutOfBoardObject();
 
-        for (IBoardObject object : objects.values())
+        for (BoardObject object : objects.values())
         {
             ArrayList<Point> points = object.getOccupiedCords();
 
             for (Point point : points)
             {
                 if (point.getX() == cords.getX() && point.getY() == cords.getY())
-                    return object.getTag();
+                    return object;
             }
         }
 
