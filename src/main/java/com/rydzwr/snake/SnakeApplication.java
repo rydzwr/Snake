@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -115,7 +116,11 @@ public class SnakeApplication extends Application
     {
         ScreenManager screen = ScreenManager.getInstance();
         GraphicsContext gc = screen.getGC();
+
         gc.clearRect(0,0, screen.getScreenWidthPx(), screen.getScreenHeightPx());
+        gc.setFill(Color.BLACK);
+        gc.fillRect(0, 0, screen.getScreenWidthPx(), screen.getScreenHeightPx());
+
         GameModeManager.getInstance().draw(gc);
     }
 

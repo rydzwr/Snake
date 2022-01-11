@@ -18,7 +18,7 @@ public class Board extends GameObject
     private final double mapMargin = 0.02;
     private double mapOffsetX = 0;
     private double mapOffsetY = 0;
-    private int score = 0;
+
 
     public double getSquareSizePx()
     {
@@ -42,21 +42,12 @@ public class Board extends GameObject
         return mapSize;
     }
 
-    public int getScore()
-    {
-        return score;
-    }
-
-    public void incrementScore(int amount)
-    {
-        this.score = score + amount;
-    }
-
     @Override
     public void init()
     {
         objects = new HashMap<String , BoardObject>();
         this.setzIndex(-1);
+        this.setTag("Board");
     }
 
     public void registerBoardObject(String name, BoardObject object)
@@ -72,7 +63,7 @@ public class Board extends GameObject
     public BoardObject checkSquareOccupied(Point cords)
     {
         if (cords.getY() < 0 || cords.getX() < 0 || cords.getY() > mapSize - 1 || cords.getX() > mapSize - 1)
-            return new OutOfBoardObject();
+            return new InvalidBoardObject("out");
 
         for (BoardObject object : objects.values())
         {
@@ -85,7 +76,7 @@ public class Board extends GameObject
             }
         }
 
-        return null;
+        return new InvalidBoardObject("null");
     }
 
     @Override
@@ -96,9 +87,6 @@ public class Board extends GameObject
         double squareSizePx = getSquareSizePx();
         mapOffsetX = screen.getScreenWidthPx() / 2 - (mapSize * squareSizePx) / 2;
         mapOffsetY = screen.getScreenHeightPx() / 2 - (mapSize * squareSizePx) / 2;
-
-        gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, screen.getScreenWidthPx(), screen.getScreenHeightPx());
 
         gc.setFill(Color.GRAY);
 
@@ -114,24 +102,5 @@ public class Board extends GameObject
             gc.fillRoundRect(point3.getX(), point3.getY(), squareSizePx, squareSizePx, 35, 35);
             gc.fillRoundRect(point4.getX(), point4.getY(), squareSizePx, squareSizePx, 35, 35);
         }
-
-        drawScore(gc);
-    }
-
-    private void drawScore(GraphicsContext gc)
-    {
-        ScreenManager screen = ScreenManager.getInstance();
-
-        double screenWidth = screen.getScreenWidthPx();
-        double screenHeight = screen.getScreenHeightPx();
-
-        gc.setFill(Color.WHITE);
-        gc.setFont(new Font("Digital-7", 35));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Score: " + score, screenWidth * 0.01, screenHeight * 0.01);
-        gc.setFont(new Font("Digital-7", 20));
-        gc.fillText("Press SHIFT To Speed Up", screenWidth * 0.01, screenHeight * 0.01 + 70);
-        gc.fillText("Press SPACE to pause", screenWidth * 0.01, screenHeight * 0.01 + 100);
     }
 }

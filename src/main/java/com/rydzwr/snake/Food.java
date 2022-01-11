@@ -26,6 +26,16 @@ public class Food extends BoardObject
         return weight;
     }
 
+    public boolean isSuperFood()
+    {
+        return superFood;
+    }
+
+    public boolean isRunningFood()
+    {
+        return runningFood;
+    }
+
     public void setType(boolean superFood, boolean runningFood, int weight)
     {
         this.weight = weight;
@@ -70,7 +80,7 @@ public class Food extends BoardObject
             foodX = random.nextInt(mapSize);
             foodY = random.nextInt(mapSize);
 
-            if (board.checkSquareOccupied(new Point(foodX, foodY)) != null)
+            if (board.checkSquareOccupied(new Point(foodX, foodY)).getTag() != "null")
                 validPosition = false;
 
         } while (!validPosition);

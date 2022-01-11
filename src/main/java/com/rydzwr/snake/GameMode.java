@@ -23,8 +23,7 @@ public abstract class GameMode
 
     public void init()
     {
-        for (GameObject o : gameObjects)
-            o.init();
+
     }
 
     public void update(long deltaTime)
@@ -121,12 +120,13 @@ public abstract class GameMode
 
     public void registerNewObjects()
     {
-        for (GameObject newObject : newObjects)
+        ArrayList<GameObject> newObjectsCopy = new ArrayList<>(newObjects);
+        newObjects.clear();
+
+        for (GameObject newObject : newObjectsCopy)
             gameObjects.add(newObject);
 
-        for (GameObject newObject: newObjects)
+        for (GameObject newObject: newObjectsCopy)
             newObject.postInit();
-
-        newObjects.clear();
     }
 }

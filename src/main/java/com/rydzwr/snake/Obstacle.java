@@ -87,14 +87,14 @@ public class Obstacle extends BoardObject
         for (int i = 0; i < rightArmLength; i++)
         {
             Point point = new Point(obstacleX, obstacleY + i);
-            if (board.checkSquareOccupied(point) == null)
+            if (board.checkSquareOccupied(point).getTag() == "null")
                 positions.add(point);
         }
 
         for (int i = 0; i < leftArmLength; i++)
         {
             Point point = new Point(obstacleX + i, obstacleY);
-            if (board.checkSquareOccupied(point) == null)
+            if (board.checkSquareOccupied(point).getTag() == "null")
                 positions.add(point);
         }
     }
@@ -109,7 +109,7 @@ public class Obstacle extends BoardObject
             for (int i = 0; i < wallLength; i++)
             {
                 Point point = new Point(obstacleX, obstacleY + i);
-                if (board.checkSquareOccupied(point) == null)
+                if (board.checkSquareOccupied(point).getTag() == "null")
                     positions.add(point);
             }
         }
@@ -118,7 +118,7 @@ public class Obstacle extends BoardObject
             for (int i = 0; i < wallLength; i++)
             {
                 Point point = new Point(obstacleX + i, obstacleY);
-                if (board.checkSquareOccupied(point) == null)
+                if (board.checkSquareOccupied(point).getTag() == "null")
                     positions.add(point);
             }
         }
@@ -131,7 +131,10 @@ public class Obstacle extends BoardObject
             obstacleX = random.nextInt(mapSize);
             obstacleY = random.nextInt(mapSize);
 
-            if (board.checkSquareOccupied(new Point(obstacleX, obstacleY)) != null)
+            if (obstacleX < (mapSize / 2) + 5 && obstacleX > mapSize / 2 && obstacleY == mapSize / 2)
+                validPosition = false;
+
+            if (board.checkSquareOccupied(new Point(obstacleX, obstacleY)).getTag() != "null")
                 validPosition = false;
 
         } while (!validPosition);

@@ -3,12 +3,11 @@ package com.rydzwr.snake;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class OutOfBoardObject extends BoardObject
+public class InvalidBoardObject extends BoardObject
 {
-    @Override
-    public String getTag()
+    public InvalidBoardObject(String tag)
     {
-        return "out";
+        setTag(tag);
     }
 
     @Override

@@ -11,7 +11,7 @@ import javafx.scene.paint.Color;
 
 public class Snake extends BoardObject
 {
-    private final int startLength = 3;
+    private final int startLength = 10;
     private final long normalInterval = 200;
     private final long fastInterval = 100;
 
@@ -19,6 +19,7 @@ public class Snake extends BoardObject
     private Point snakeHead;
     private Dir currentDirection;
     private Board board;
+    private LevelManager levelManager;
 
     private long timeSinceMovement = 0;
     private long movementInterval;
@@ -41,11 +42,15 @@ public class Snake extends BoardObject
         currentDirection = Dir.RIGHT;
         snakeBody = new ArrayList<>();
         movementInterval = normalInterval;
+
+        this.setTag("Snake");
+        this.setzIndex(-2);
     }
 
     @Override
     public void postInit()
     {
+        levelManager = (LevelManager) GameObject.findUnique("LevelManager");
         board = (Board)GameObject.findUnique("Board");
         int mapSize = board.getMapSize();
 
@@ -53,9 +58,6 @@ public class Snake extends BoardObject
             snakeBody.add(new Point(mapSize / 2 - i, mapSize / 2));
 
         snakeHead = snakeBody.get(0);
-
-        this.setTag("Snake");
-        this.setzIndex(1);
         board.registerBoardObject(this.getUniqueId(), this);
     }
 
@@ -135,14 +137,15 @@ public class Snake extends BoardObject
 
     private void eatFood()
     {
-        String tag = board.checkSquareOccupied(snakeHead).getTag();
+        BoardObject obj = board.checkSquareOccupied(snakeHead);
 
-        if (tag == "Food")
+        if (obj.getTag() == "Food")
         {
-            snakeBody.add(new Point(-1, -1));
-           // GameObject.destroy("Food" + board.getScore());
-           // GameObject.create("Food" + (board.getScore() + 1), Food.class);
-            board.incrementScore(1);
+            int weight = ((Food)obj).getWeight();
+            for (int i = 0; i < weight; i++)
+                snakeBody.add(new Point(-1, -1));
+
+            levelManager.foodEaten(obj);
         }
     }
 
@@ -169,18 +172,5 @@ public class Snake extends BoardObject
                 snakeHead.y++;
                 break;
         }
-    }
-
-    public boolean positionInsideSnake(Point position)
-    {
-        boolean isOutside = true;
-
-        for (Point snake : snakeBody)
-        {
-            if (snake.getX() == position.getX() && snake.getY() == position.getY())
-                isOutside = false;
-        }
-
-        return !isOutside;
     }
 }

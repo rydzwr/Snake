@@ -15,15 +15,12 @@ public class PlayGameMode extends GameMode
     private boolean firstUpdate = true;
 
     private ScreenManager screen = ScreenManager.getInstance();
-    private Snake player;
 
     @Override
     public void init()
     {
+        GameObject.create(LevelManager.class);
         GameObject.create(Board.class);
-        player = (Snake)GameObject.create(Snake.class);
-        GameObject.create(Food.class);
-        GameObject.create(Obstacle.class);
 
         super.init();
     }
@@ -59,11 +56,11 @@ public class PlayGameMode extends GameMode
             firstUpdate = false;
         }
 
-        if (player.isDead())
+       /* if (player.isDead())
         {
             SnakeApplication.getInstance().setGamePaused(true);
             gameOver = true;
-        }
+        }*/
     }
 
     @Override
